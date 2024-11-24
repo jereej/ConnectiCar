@@ -7,6 +7,9 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 class InfluxDBHandler:
     
     def __init__(self):
+        """This class acts as an intermediate between the RaspberryPi and InfluxDB.
+        Data is read from the RaspberryPi and sent to InfluxDB through this class.
+        """
         self.url = "YOUR_URL_HERE"
         self.token = "YOUR_TOKEN_HERE"
         self.org = "YOUR_ORG_HERE"
