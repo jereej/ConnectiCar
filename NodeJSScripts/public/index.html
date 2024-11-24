@@ -70,10 +70,10 @@
     let map, marker, vectorLayer;
 
     function getSignalImageIndex(signalStrength) {
-      if (signalStrength < 1) return 0;
-      if (signalStrength >= 1 && signalStrength < 5) return 1;
-      if (signalStrength >= 5 && signalStrength < 10) return 2;
-      if (signalStrength >= 10 && signalStrength < 15) return 3;
+      if (signalStrength == 99) return 0;
+      if (signalStrength <= 1) return 1;
+      if (signalStrength > 1 && signalStrength < 2) return 2;
+      if (signalStrength >= 2 && signalStrength < 30) return 3;
       return 4;
     }
 
