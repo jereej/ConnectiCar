@@ -19,7 +19,7 @@ The OBU consists of a Raspberry Pi model 4B and a [Waveshare RM520N-GL 5G HAT](h
     - INSTRUCTIONS TO BE ADDED
 - **RaspberryPiScripts**
     - Contains the scripts running locally on the OBU
-    - Instructions can be found from `STARTUP.md` in the `RaspberryPiScripts` folder
+    - Instructions can be found from the `README.md` file in the `RaspberryPiScripts` folder
 - **TestCases**
     - Contains the scripts regarding unit and acceptance testing of the OBU
     - TO BE ADDED
