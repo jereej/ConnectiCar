@@ -95,7 +95,7 @@
 
     async function mainRead() {
       const coordinates = await getData();
-      const latestData = coordinates[0];
+      const latestData = coordinates;
 
       document.getElementById('longitude').textContent = `Longitude: ${latestData.longitude}`;
       document.getElementById('latitude').textContent = `Latitude: ${latestData.latitude}`;
