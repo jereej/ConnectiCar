@@ -17,26 +17,23 @@ from(bucket: "${bucket}")
 `;
 
 
-const dataStore = { latestData: [] };
+const dataStore = { latestData: null };
 
 
 async function queryAndUpdateData() {
   try {
     while (true) {
       await new Promise(resolve => setTimeout(resolve, 10000));
-      const tempResults = [];
-
       await new Promise((resolve, reject) => {
         queryApi.queryRows(query, {
           next(row, tableMeta) {
             const parsed = tableMeta.toObject(row);
-            const data = {
+            const tempData = {
               signal_strength: parsed._value || 0,
               longitude: parseFloat(parsed.longitude) || 0.0,
               latitude: parseFloat(parsed.latitude) || 0.0,
               speed: parseFloat(parsed.speed) || 0,
             };
-            tempResults.push(data);
           },
           error(err) {
             reject(err);
@@ -47,7 +44,7 @@ async function queryAndUpdateData() {
         });
       });
 
-      dataStore.latestData = tempResults;
+      dataStore.latestData = tempData;
     }
   } catch (error) {
     console.error('Error during query loop:', error);
