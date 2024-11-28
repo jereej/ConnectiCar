@@ -95,7 +95,7 @@
 
     async function mainRead() {
       const coordinates = await getData();
-      const latestData = coordinates[coordinates.length - 1];
+      const latestData = coordinates[0];
 
       document.getElementById('longitude').textContent = `Longitude: ${latestData.longitude}`;
       document.getElementById('latitude').textContent = `Latitude: ${latestData.latitude}`;
@@ -156,7 +156,7 @@
 
     async function focusMapOnMarkerFromButton() {
       const coordinates = await getData();
-      const latestData = coordinates[coordinates.length - 1];
+      const latestData = coordinates[0];
       const longitude = latestData.longitude;
       const latitude = latestData.latitude;
       focusMapOnMarker(longitude, latitude);
@@ -167,13 +167,13 @@
     }
 
     function addMarkerClickListener(data) {
+      const popup = document.getElementById('popup');
       map.on('click', function (evt) {
         const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
           return feature;
         });
 
         if (feature === marker) {
-          const popup = document.getElementById('popup');
           popup.style.display = 'block';
 
           document.getElementById('longitude').textContent = `Longitude: ${data.longitude}`;
