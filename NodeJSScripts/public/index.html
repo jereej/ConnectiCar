@@ -50,6 +50,13 @@
       background-color: rgb(220, 220, 220);
       border: 1px solid rgb(120, 120, 120);
     }
+    #checkbox {
+      width: 50px;
+      height: 23px;
+      top: 5px;
+      left: 100px;
+      position: absolute;
+    }
   </style>
 </head>
 <body>
@@ -68,9 +75,12 @@
         </div>
       </div>
     </div>
-    <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(buttonLon, buttonLat)">
-      <img id="focusImage" src="Icons/focus.png" width="20" height="20">
-    </button> 
+    <div>
+      <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(buttonLon, buttonLat)">
+        <img id="focusImage" src="Icons/focus.png" width="20" height="20">
+      </button>
+      <input type="checkbox" id="checkbox" name="markerApplyCheckbox" title="Start/stop applying markers, note:WIP">
+    </div>
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
@@ -131,7 +141,7 @@
           geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
         });
 
-        const iconStyle = new ol.style.Style({
+        const markerIconStyle = new ol.style.Style({
           image: new ol.style.Icon({
             anchor: [0.5, 1],
             src: 'Icons/marker_icon.png',
@@ -139,7 +149,7 @@
           })
         });
 
-        marker.setStyle(iconStyle);
+        marker.setStyle(markerIconStyle);
 
         const vectorSource = new ol.source.Vector({
           features: [marker]
@@ -149,11 +159,35 @@
           source: vectorSource
         });
 
+        prevLocVectorSource = new ol.source.Vector();
+
+        prevLocVectorLayer = new ol.layer.Vector({
+            source: prevLocVectorSource
+        });
+
+        map.addLayer(prevLocVectorLayer)
         map.addLayer(vectorLayer);
         addMarkerClickListener(latestData);
         focusMapOnMarker(buttonLon, buttonLat);
       } else {
         marker.getGeometry().setCoordinates(ol.proj.fromLonLat([buttonLon, buttonLat]));
+        
+        if (isMarkApplierChecked()){
+          const historicalMarker = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
+            });
+            historicalMarker.setStyle(new ol.style.Style({
+              text: new ol.style.Text({
+                    text: '\u{25C9}',
+                    font: '24px sans-serif',
+                    fill: new ol.style.Fill({
+                        color: '#3A76F0'
+                    }),
+                    offsetY: -4
+                })
+            }));
+            prevLocVectorLayer.getSource().addFeature(historicalMarker);
+        }
       }
     }
 
@@ -179,6 +213,11 @@
           popup.style.display = 'none';
         }
       });
+    }
+
+    function isMarkApplierChecked(){
+      const checkBox = document.getElementById('checkbox')
+      return checkBox.checked;
     }
 
     async function getData() {
