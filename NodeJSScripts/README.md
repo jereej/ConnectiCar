@@ -1,51 +1,19 @@
-# Instructions on how to use the startup script
+# Instructions on how to setup the server
 
 ## Requirements
-To run the startupscript.sh you'll need the following packages:
+To run the NODE.JS you'll need everything the NodeJSScripts folder and a influxDB instance:
+
+package.json and package-lock.json should automatically install all the required dependencies when the NODE.JS is ran
+
+Manually use the command:
 ```
-@opentelemetry/api
-@opentelemetry/exporter-jaeger
-@opentelemetry/instrumentation
-@opentelemetry/instrumentation-express
-@opentelemetry/instrumentation-http
-@opentelemetry/instrumentation-pg
-@opentelemetry/resources
-@opentelemetry/sdk-trace-base
-@opentelemetry/sdk-trace-node
-@opentelemetry/semantic-conventions
-@influxdata/influxdb-client
-body-parser
-express
-express-async-handler
-kube-service-bindings
-pg
-pino
-eslint
-eslint-config-semistandard
-mocha
-nodeshift
-nyc
-proxyquire
-standard-version
-supertest
+npm install <package>
 ```
 
-If you haven't installed the packages on your machine, you'll need to run the commands:
-```sh
-COMMANDS TO BE ADDED HERE
-```
-## Creating a routine to run startupscript.sh every time the machine boots
-INSTRUCTIONS_TO_BE_ADDED_HERE
 
-## Running the startupscript.sh manually
-You can run the startupscript simply by navigating to the RaspberryPiScripts directory and executing:
-```sh
-./startupscript.sh
+lib/api/query.js
 ```
-
-Main contents of the : lib/api/query.js
-```
-Queries data from influxDB, needs specified url, API token, organization- and bucket name, saves the queried data to local variable latestData which is saved to local dataStore inorder to export it non statically.
+Queries data from influxDB. It needs specified url, Influx API token, organization and bucket name. It saves the queried data to local variable latestData which is saved to local dataStore dictionary inorder to export it non statically.
 the data has to be in the right format for the parsing to work properly but you can change this part to better fit your data:
 const data = {
     signal_strength: parsed._value || 0,
@@ -54,4 +22,23 @@ const data = {
     speed: parseFloat(parsed.speed) || 0,
   };
 
+```
+
+lib/route/router.js
+```
+Imports the dataStore from the api/query inorder to forward the data to frontend.
+```
+
+public
+```
+Contains frontend HTML and a folder to store required icons etc. HTML uses Open street map to create the map and adds marker based on the queried data, it showcases the signal strength, speed and location data in a pop-up which can be opened by clicking the marker
+```
+
+app.js
+```
+Configures the routes etc.
+```
+server.js
+```
+Configures and executes the server
 ```
