@@ -11,10 +11,11 @@ npm install <package>
 ```
 
 
-lib/api/query.js
-```
+## lib/api/query.js
+
 Queries data from influxDB. It needs specified url, Influx API token, organization and bucket name. It saves the queried data to local variable latestData which is saved to local dataStore dictionary inorder to export it non statically.
 the data has to be in the right format for the parsing to work properly but you can change this part to better fit your data:
+```
 const data = {
     signal_strength: parsed._value || 0,
     longitude: parseFloat(parsed.longitude) || 0.0,
@@ -24,21 +25,21 @@ const data = {
 
 ```
 
-lib/route/router.js
-```
+## lib/route/router.js
+
 Imports the dataStore from the api/query inorder to forward the data to frontend.
-```
 
-public
-```
+
+## public
+
 Contains frontend HTML and a folder to store required icons etc. HTML uses Open street map to create the map and adds marker based on the queried data, it showcases the signal strength, speed and location data in a pop-up which can be opened by clicking the marker
-```
 
-app.js
-```
+
+## app.js
+
 Configures the routes etc.
-```
-server.js
-```
+
+## server.js
+
 Configures and executes the server
-```
+
