@@ -25,8 +25,6 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-const db = require('./lib/db');
-
 const fruits = require('./lib/routes/fruits');
 
 app.use(bodyParser.json());
@@ -52,10 +50,5 @@ app.use('/live', (request, response) => {
   return response.sendStatus(200);
 });
 
-db.init().then(() => {
-  logger.info('Database init\'d');
-}).catch(error => {
-  logger.error(error);
-});
 
 module.exports = app;
