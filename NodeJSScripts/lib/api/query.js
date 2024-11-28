@@ -18,11 +18,12 @@ from(bucket: "${bucket}")
 const dataStore = { latestData: null };
 
 async function queryAndUpdateData() {
-  try {
-    while (true) {
-      await new Promise(resolve => setTimeout(resolve, 10000));
-      let latestResult = null;
+  let retryCount = 0;
+  const maxRetries = 5;
 
+  async function executeQuery() {
+    try {
+      let latestResult = null;
       await new Promise((resolve, reject) => {
         queryApi.queryRows(query, {
           next(row, tableMeta) {
@@ -33,10 +34,10 @@ async function queryAndUpdateData() {
               latitude: parseFloat(parsed.latitude) || 0.0,
               speed: parseFloat(parsed.speed) || 0,
             };
-
             latestResult = data;
           },
           error(err) {
+            console.error('Query Error:', err);
             reject(err);
           },
           complete() {
@@ -46,15 +47,26 @@ async function queryAndUpdateData() {
       });
 
       dataStore.latestData = latestResult;
-
+      console.log('Latest Data Updated:', dataStore.latestData);
+      retryCount = 0;
+    } catch (error) {
+      console.error('Error during query:', error);
+      if (retryCount < maxRetries) {
+        retryCount++;
+        console.log(`Retrying... Attempt ${retryCount}`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        await executeQuery();
+      } else {
+        console.error('Max retries reached, giving up.');
+      }
     }
-  } catch (error) {
-    console.error('Error during query loop:', error);
-  } finally {
-    influxDB.close();
   }
+
+  setInterval(async () => {
+    await executeQuery();
+  }, 10000);
 }
 
 queryAndUpdateData();
 
-module.exports = dataStore
+module.exports = dataStore;
