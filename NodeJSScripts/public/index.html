@@ -68,7 +68,7 @@
         </div>
       </div>
     </div>
-    <button id="button" title="Focus map on the marker" onclick="focusMapOnMarkerFromButton()">
+    <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(buttonLon, buttonLat)">
       <img id="focusImage" src="Icons/focus.png" width="20" height="20">
     </button> 
   </section>
@@ -83,7 +83,7 @@
       "Icons/signal_4.png"
     ];
 
-    let map, marker, vectorLayer;
+    let map, marker, vectorLayer, buttonLat, buttonLon;
 
     function getSignalImageIndex(signalStrength) {
       if (signalStrength == 99) return 0;
@@ -102,14 +102,16 @@
       document.getElementById('speed').textContent = `Speed: ${latestData.speed}`;
       document.getElementById('signalText').textContent = `${latestData.signal_strength}`;
 
+      buttonLon = latestData.longitude;
+      buttonLat = latestData.latitude;
+
       const signalImageIndex = getSignalImageIndex(latestData.signal_strength);
       document.getElementById('signalImage').src = images[signalImageIndex];
 
-      updateMap(latestData.longitude, latestData.latitude);
-      addMarkerClickListener(latestData); // Add marker click listener with updated data
+      updateMap(latestData.longitude, latestData.latitude, latestData);
     }
 
-    function updateMap(longitude, latitude) {
+    function updateMap(longitude, latitude, latestData) {
       if (!map) {
         map = new ol.Map({
           target: 'demoMap',
@@ -148,18 +150,11 @@
         });
 
         map.addLayer(vectorLayer);
-        focusMapOnMarker(longitude, latitude);
+        addMarkerClickListener(latestData);
+        focusMapOnMarker(buttonLon, buttonLat);
       } else {
-        marker.getGeometry().setCoordinates(ol.proj.fromLonLat([longitude, latitude]));
+        marker.getGeometry().setCoordinates(ol.proj.fromLonLat([buttonLon, buttonLat]));
       }
-    }
-
-    async function focusMapOnMarkerFromButton() {
-      const coordinates = await getData();
-      const latestData = coordinates[0];
-      const longitude = latestData.longitude;
-      const latitude = latestData.latitude;
-      focusMapOnMarker(longitude, latitude);
     }
 
     function focusMapOnMarker(longitude, latitude) {
