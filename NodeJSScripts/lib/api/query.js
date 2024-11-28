@@ -1,6 +1,7 @@
 const { InfluxDB } = require('@influxdata/influxdb-client');
 
-const url = 'https://influxdb-connecticar.2.rahtiapp.fi';
+
+const url = 'https://influxdb-connecticar.2.rahtiapp.fi/';
 const token = process.env.INFLUX_TOKEN;
 const org = 'connecticar';
 const bucket = 'car-data';
@@ -10,57 +11,49 @@ const queryApi = influxDB.getQueryApi(org);
 
 const query = `
 from(bucket: "${bucket}")
-  |> range(start: -1h)
+  |> range(start: -10m)
   |> filter(fn: (r) => r._measurement == "signal_strength")
   |> filter(fn: (r) => r._field == "value")
-  |> last()
 `;
 
-const dataStore = { latestData: null };
+const dataStore = { latestData: [] };
 
 async function queryAndUpdateData() {
   try {
     while (true) {
-      let latestData = null;
-      try {
-        await new Promise((resolve, reject) => {
-          queryApi.queryRows(query, {
-            next(row, tableMeta) {
-              const parsed = tableMeta.toObject(row);
-              latestData = {
-                signal_strength: parsed._value || 0,
-                longitude: parseFloat(parsed.longitude) || 0.0,
-                latitude: parseFloat(parsed.latitude) || 0.0,
-                speed: parseFloat(parsed.speed) || 0,
-              };
-            },
-            error(err) {
-              console.error("Query error:", err);
-              reject(err);
-            },
-            complete() {
-              resolve();
-            },
-          });
-        });
-
-        if (latestData) {
-          dataStore.latestData = latestData;
-        } else {
-          console.log("No data found.");
-        }
-      } catch (error) {
-        console.error("Error fetching latest data:", error);
-      }
-
       await new Promise(resolve => setTimeout(resolve, 10000));
-    }
+      const tempResults = [];
+      await new Promise((resolve, reject) => {
+        queryApi.queryRows(query, {
+          next(row, tableMeta) {
+            const parsed = tableMeta.toObject(row);
+            const data = {
+              signal_strength: parsed._value || 0,
+              longitude: parseFloat(parsed.longitude) || 0.0,
+              latitude: parseFloat(parsed.latitude) || 0.0,
+              speed: parseFloat(parsed.speed) || 0,
+            };
+            tempResults.push(data);
+          },
+          error(err) {
+            reject(err);
+          },
+          complete() {
+            resolve();
+          },
+        });
+      });
+
+      dataStore.latestData = tempResults;
+
+           }
   } catch (error) {
-    console.error("Error in query loop:", error);
+    console.error('Error during query loop:', error);
   } finally {
     influxDB.close();
   }
 }
+
 
 queryAndUpdateData();
 
