@@ -167,14 +167,13 @@
     }
 
     function addMarkerClickListener(data) {
-      const popup = document.getElementById('popup');
-
       map.on('click', function (evt) {
         const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
           return feature;
         });
 
         if (feature === marker) {
+          const popup = document.getElementById('popup');
           popup.style.display = 'block';
 
           document.getElementById('longitude').textContent = `Longitude: ${data.longitude}`;
