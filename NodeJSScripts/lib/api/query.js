@@ -52,7 +52,6 @@ async function queryAndUpdateData() {
 
       if (latestData) {
         dataStore.latestData = latestData;
-        console.log('Latest Data:', JSON.stringify(dataStore.latestData));
       }
     } catch (error) {
       console.error('Error during data query:', error);
