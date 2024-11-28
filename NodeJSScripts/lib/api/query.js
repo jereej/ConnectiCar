@@ -1,6 +1,6 @@
 const { InfluxDB } = require('@influxdata/influxdb-client');
 
-const url = 'https://influxdb-connecticar.2.rahtiapp.fi/';
+const url = 'https://influxdb-connecticar.2.rahtiapp.fi';
 const token = process.env.INFLUX_TOKEN;
 const org = 'connecticar';
 const bucket = 'car-data';
@@ -13,16 +13,15 @@ from(bucket: "${bucket}")
   |> range(start: -1h)
   |> filter(fn: (r) => r._measurement == "signal_strength")
   |> filter(fn: (r) => r._field == "value")
-  |> last() // Fetch only the most recent value
+  |> last()
 `;
 
 const dataStore = { latestData: null };
 
 async function queryAndUpdateData() {
   try {
-    const interval = setInterval(async () => {
+    while (true) {
       let latestData = null;
-
       try {
         await new Promise((resolve, reject) => {
           queryApi.queryRows(query, {
@@ -36,6 +35,7 @@ async function queryAndUpdateData() {
               };
             },
             error(err) {
+              console.error("Query error:", err);
               reject(err);
             },
             complete() {
@@ -46,16 +46,19 @@ async function queryAndUpdateData() {
 
         if (latestData) {
           dataStore.latestData = latestData;
-          console.log("Latest data updated:", dataStore.latestData);
+        } else {
+          console.log("No data found.");
         }
       } catch (error) {
         console.error("Error fetching latest data:", error);
       }
-    }, 10000);
+
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    }
   } catch (error) {
     console.error("Error in query loop:", error);
   } finally {
-    influxDB.close(); 
+    influxDB.close();
   }
 }
 
