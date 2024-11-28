@@ -1,6 +1,5 @@
 const { InfluxDB } = require('@influxdata/influxdb-client');
 
-
 const url = 'https://influxdb-connecticar.2.rahtiapp.fi/';
 const token = process.env.INFLUX_TOKEN;
 const org = 'connecticar';
@@ -16,13 +15,14 @@ from(bucket: "${bucket}")
   |> filter(fn: (r) => r._field == "value")
 `;
 
-const dataStore = { latestData: [] };
+const dataStore = { latestData: null };
 
 async function queryAndUpdateData() {
   try {
     while (true) {
       await new Promise(resolve => setTimeout(resolve, 10000));
-      const tempResults = [];
+      let latestResult = null;
+
       await new Promise((resolve, reject) => {
         queryApi.queryRows(query, {
           next(row, tableMeta) {
@@ -33,7 +33,8 @@ async function queryAndUpdateData() {
               latitude: parseFloat(parsed.latitude) || 0.0,
               speed: parseFloat(parsed.speed) || 0,
             };
-            tempResults.push(data);
+
+            latestResult = data;
           },
           error(err) {
             reject(err);
@@ -44,9 +45,9 @@ async function queryAndUpdateData() {
         });
       });
 
-      dataStore.latestData = tempResults;
+      dataStore.latestData = latestResult;
 
-           }
+    }
   } catch (error) {
     console.error('Error during query loop:', error);
   } finally {
@@ -54,7 +55,6 @@ async function queryAndUpdateData() {
   }
 }
 
-
 queryAndUpdateData();
 
-module.exports = dataStore;
+module.exports = dataStore
