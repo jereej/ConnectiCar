@@ -56,7 +56,7 @@ async function queryAndUpdateData() {
     } catch (error) {
       console.error('Error during data query:', error);
     }
-  }, 10000);
+  }, 500);
 }
 
 queryAndUpdateData();
