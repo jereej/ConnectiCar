@@ -25,9 +25,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-const db = require('./lib/db');
-
-const fruits = require('./lib/routes/fruits');
+const router = require('./lib/routes/router');
 
 app.use(bodyParser.json());
 app.use((error, request, response, next) => {
@@ -41,7 +39,7 @@ app.use((error, request, response, next) => {
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api', fruits);
+app.use('/api', router);
 
 // Add a health check
 app.use('/ready', (request, response) => {
@@ -52,10 +50,5 @@ app.use('/live', (request, response) => {
   return response.sendStatus(200);
 });
 
-db.init().then(() => {
-  logger.info('Database init\'d');
-}).catch(error => {
-  logger.error(error);
-});
 
 module.exports = app;

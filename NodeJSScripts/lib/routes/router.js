@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const dataStore = require('../api/fruits');
+const dataStore = require('../api/query');
 
 router.get('/', async (req, res) => {
   try {
