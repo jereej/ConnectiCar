@@ -3,9 +3,31 @@
 ## Requirements
 To run the startupscript.sh you'll need the following packages:
 ```
-dhclient
-udhcpc
-route
+@opentelemetry/api
+@opentelemetry/exporter-jaeger
+@opentelemetry/instrumentation
+@opentelemetry/instrumentation-express
+@opentelemetry/instrumentation-http
+@opentelemetry/instrumentation-pg
+@opentelemetry/resources
+@opentelemetry/sdk-trace-base
+@opentelemetry/sdk-trace-node
+@opentelemetry/semantic-conventions
+@influxdata/influxdb-client
+body-parser
+express
+express-async-handler
+kube-service-bindings
+pg
+pino
+eslint
+eslint-config-semistandard
+mocha
+nodeshift
+nyc
+proxyquire
+standard-version
+supertest
 ```
 
 If you haven't installed the packages on your machine, you'll need to run the commands:
@@ -21,14 +43,15 @@ You can run the startupscript simply by navigating to the RaspberryPiScripts dir
 ./startupscript.sh
 ```
 
-Main contents of the startupscript.sh:
-```sh
-# captures the interface starting with the prefix enx
-interface=$(ifconfig -a | grep "enx" | awk '{gsub(/:/, "")}; print $1') 
-# configures the netword interface using DHCP (Dynamic Host Configuration Protocol)
-dhclient -v "$interface"
-# uses the captured interface to negotiate a lease with the DHCP server
-udhcpc -i "$interface"
-# adds the captured interface to the routing tables
-route add -net 0.0.0.0 "$interface"
+Main contents of the : lib/api/query.js
+```
+Queries data from influxDB, needs specified url, API token, organization- and bucket name, saves the queried data to local variable latestData which is saved to local dataStore inorder to export it non statically.
+the data has to be in the right format for the parsing to work properly but you can change this part to better fit your data:
+const data = {
+    signal_strength: parsed._value || 0,
+    longitude: parseFloat(parsed.longitude) || 0.0,
+    latitude: parseFloat(parsed.latitude) || 0.0,
+    speed: parseFloat(parsed.speed) || 0,
+  };
+
 ```
