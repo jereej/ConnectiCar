@@ -57,6 +57,15 @@
       left: 100px;
       position: absolute;
     }
+    #colorSelect {
+      width: 80px;
+      height: 23px;
+      top: 8px;
+      left: 160px;
+      position: absolute;
+      background-color: rgb(248, 248, 248);
+      border-radius: 2px;
+    }
   </style>
 </head>
 <body>
@@ -79,7 +88,15 @@
       <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(buttonLon, buttonLat)">
         <img id="focusImage" src="Icons/focus.png" width="20" height="20">
       </button>
-      <input type="checkbox" id="checkbox" name="markerApplyCheckbox" title="Start/stop applying markers, note:WIP">
+      <input type="checkbox" id="checkbox" name="markerApplyCheckbox" title="Start/stop applying a line">
+      <select name="colors" id="colorSelect" title="Choose a color for the line">
+        <option value="blue" style='font-size: 18px; color: blue;'>Blue&#9679;</option>
+        <option value="red" style='font-size: 18px; color: red;'>Red&#9679;</option>
+        <option value="green" style='font-size: 18px; color: green;'>Green&#9679;</option>
+        <option value="orange" style='font-size: 18px; color: orange;'>Orange&#9679;</option>
+        <option value="purple" style='font-size: 18px; color: purple;'>Purple&#9679;</option>
+        <option value="brown" style='font-size: 18px; color: brown;'>Brown&#9679;</option>
+      </select>
     </div>
   </section>
 
@@ -93,7 +110,22 @@
       "Icons/signal_4.png"
     ];
 
+    const colorSelect = document.getElementById('colorSelect');
+
+    const colorMap = {
+        blue: '#0000FF',
+        red: '#FF0000',
+        green: '#008000',
+        orange: '#FFA500',
+        purple: '#800080',
+        brown: '#A52A2A'
+    };
+
     let map, marker, vectorLayer, buttonLat, buttonLon;
+
+    let lineSegments = [];
+    let currentLineFeature = null;
+    let lastPoint = null;
 
     function getSignalImageIndex(signalStrength) {
       if (signalStrength == 99) return 0;
@@ -101,6 +133,11 @@
       if (signalStrength > 1 && signalStrength < 2) return 2;
       if (signalStrength >= 2 && signalStrength < 30) return 3;
       return 4;
+    }
+
+    function convertColorValue(selectedValue) {
+        const colorCode = colorMap[selectedValue] || 'Unknown Color';
+        return colorCode;
     }
 
     async function mainRead() {
@@ -121,73 +158,90 @@
     }
 
     function updateMap(longitude, latitude, latestData) {
+      const newCoordinates = ol.proj.fromLonLat([longitude, latitude]);
+
       if (!map) {
-        map = new ol.Map({
-          target: 'demoMap',
-          layers: [
-            new ol.layer.Tile({
-              source: new ol.source.OSM()
-            })
-          ],
-          view: new ol.View({
-            center: ol.proj.fromLonLat([longitude, latitude]),
-            zoom: 14,
-            maxZoom: 20
-          })
-        });
+          map = new ol.Map({
+              target: 'demoMap',
+              layers: [
+                  new ol.layer.Tile({
+                      source: new ol.source.OSM()
+                  })
+              ],
+              view: new ol.View({
+                  center: newCoordinates,
+                  zoom: 14,
+                  maxZoom: 20
+              })
+          });
 
-        marker = new ol.Feature({
-          geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
-        });
+          marker = new ol.Feature({
+              geometry: new ol.geom.Point(newCoordinates)
+          });
 
-        const markerIconStyle = new ol.style.Style({
-          image: new ol.style.Icon({
-            anchor: [0.5, 1],
-            src: 'Icons/marker_icon.png',
-            scale: 0.075
-          })
-        });
+          const markerIconStyle = new ol.style.Style({
+              image: new ol.style.Icon({
+                  anchor: [0.5, 1],
+                  src: 'Icons/marker_icon.png',
+                  scale: 0.075
+              })
+          });
 
-        marker.setStyle(markerIconStyle);
+          marker.setStyle(markerIconStyle);
 
-        const vectorSource = new ol.source.Vector({
-          features: [marker]
-        });
+          const markerSource = new ol.source.Vector({
+              features: [marker]
+          });
 
-        vectorLayer = new ol.layer.Vector({
-          source: vectorSource
-        });
+          vectorLayer = new ol.layer.Vector({
+              source: markerSource
+          });
 
-        prevLocVectorSource = new ol.source.Vector();
+          map.addLayer(vectorLayer);
 
-        prevLocVectorLayer = new ol.layer.Vector({
-            source: prevLocVectorSource
-        });
-
-        map.addLayer(prevLocVectorLayer)
-        map.addLayer(vectorLayer);
-        addMarkerClickListener(latestData);
-        focusMapOnMarker(buttonLon, buttonLat);
+          addMarkerClickListener(latestData);
+          focusMapOnMarker(longitude, latitude);
       } else {
-        marker.getGeometry().setCoordinates(ol.proj.fromLonLat([buttonLon, buttonLat]));
-        
-        if (isMarkApplierChecked()){
-          const historicalMarker = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
-            });
-            historicalMarker.setStyle(new ol.style.Style({
-              text: new ol.style.Text({
-                    text: '\u{25C9}',
-                    font: '24px sans-serif',
-                    fill: new ol.style.Fill({
-                        color: '#3A76F0'
-                    }),
-                    offsetY: -4
-                })
-            }));
-            prevLocVectorLayer.getSource().addFeature(historicalMarker);
-        }
+          marker.getGeometry().setCoordinates(newCoordinates);
+
+          if (isMarkApplierChecked()) {
+              if (!currentLineFeature) {
+                  currentLineFeature = createNewLineSegment(newCoordinates);
+              } else {
+                  const currentCoordinates = currentLineFeature.getGeometry().getCoordinates();
+                  currentCoordinates.push(newCoordinates);
+                  currentLineFeature.getGeometry().setCoordinates(currentCoordinates);
+              }
+              lastPoint = newCoordinates;
+          } else {
+              currentLineFeature = null;
+          }
       }
+    }
+
+    function createNewLineSegment(startingPoint) {
+        const lineFeature = new ol.Feature({
+            geometry: new ol.geom.LineString([startingPoint])
+        });
+
+        lineFeature.setStyle(new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: convertColorValue(colorSelect.value),
+                width: 3
+            })
+        }));
+
+        const lineSource = new ol.source.Vector({
+            features: [lineFeature]
+        });
+
+        const lineLayer = new ol.layer.Vector({
+            source: lineSource
+        });
+
+        map.addLayer(lineLayer);
+        lineSegments.push(lineFeature);
+        return lineFeature;
     }
 
     function focusMapOnMarker(longitude, latitude) {
