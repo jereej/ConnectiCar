@@ -161,8 +161,8 @@
         latestSignalStrength = latestData.signal_strength;
       }
 
-      document.getElementById('longitude').textContent = `Longitude: ${latestLon}`;
-      document.getElementById('latitude').textContent = `Latitude: ${latestLat}`;
+      document.getElementById('longitude').textContent = `Longitude: ${latestLon.toFixed(6)}`;
+      document.getElementById('latitude').textContent = `Latitude: ${latestLat.toFixed(6)}`;
       document.getElementById('speed').textContent = `Speed: ${latestSpd}`;
       document.getElementById('signalText').textContent = `${latestSignalStrength}`;
 
