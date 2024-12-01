@@ -85,7 +85,7 @@
       </div>
     </div>
     <div>
-      <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(buttonLon, buttonLat)">
+      <button id="button" title="Focus map on the marker" onclick="focusMapOnMarker(latestLon, latestLat)">
         <img id="focusImage" src="Icons/focus.png" width="20" height="20">
       </button>
       <input type="checkbox" id="checkbox" name="markerApplyCheckbox" title="Start/stop applying a line">
@@ -121,7 +121,13 @@
         brown: '#A52A2A'
     };
 
-    let map, marker, vectorLayer, buttonLat, buttonLon;
+    let map, marker, vectorLayer
+
+    //Variables for storing the latest received data values 
+    let latestLon, latestLat, latestSpd, latestSignalStrength;
+
+    //Default values for data-storing variables in the case of data returning null
+    const defaultLon = 25.466280, defaultLat = 65.059286, defaultSpd = 0, defaultSignalStrength = 99;
 
     let lineSegments = [];
     let currentLineFeature = null;
@@ -143,18 +149,27 @@
     async function mainRead() {
       const latestData = await getData();
 
-      document.getElementById('longitude').textContent = `Longitude: ${latestData.longitude}`;
-      document.getElementById('latitude').textContent = `Latitude: ${latestData.latitude}`;
-      document.getElementById('speed').textContent = `Speed: ${latestData.speed}`;
-      document.getElementById('signalText').textContent = `${latestData.signal_strength}`;
+      if (latestData == null) {
+        latestLon = defaultLon;
+        latestLat = defaultLat;
+        latestSpd = defaultSpd;
+        latestSignalStrength = defaultSignalStrength;
+      } else {
+        latestLon = latestData.longitude;
+        latestLat = latestData.latitude;
+        latestSpd = latestData.speed;
+        latestSignalStrength = latestData.signal_strength;
+      }
 
-      buttonLon = latestData.longitude;
-      buttonLat = latestData.latitude;
+      document.getElementById('longitude').textContent = `Longitude: ${latestLon}`;
+      document.getElementById('latitude').textContent = `Latitude: ${latestLat}`;
+      document.getElementById('speed').textContent = `Speed: ${latestSpd}`;
+      document.getElementById('signalText').textContent = `${latestSignalStrength}`;
 
-      const signalImageIndex = getSignalImageIndex(latestData.signal_strength);
+      const signalImageIndex = getSignalImageIndex(latestSignalStrength);
       document.getElementById('signalImage').src = images[signalImageIndex];
 
-      updateMap(latestData.longitude, latestData.latitude, latestData);
+      updateMap(latestLon, latestLat, latestData);
     }
 
     function updateMap(longitude, latitude, latestData) {
