@@ -4,10 +4,16 @@ import re
 
 class SerialHandler:
     
-    def __init__(self):
+    def __init__(self, used_serial="/dev/ttyUSB2"):
         """This class is used to read data through the serial port.
+        
+        Args:
+            used_serial (str, optional): Used serial bus, /dev/ttyUSB2 by default.
         """
-        self.s = serial.Serial("/dev/ttyUSB2", 115200, timeout=1)
+        try:
+            self.s = serial.Serial(used_serial, 115200, timeout=1)
+        except Exception as e:  # to be specified later on.
+            print(e)
         
     def read_signal_strength_data(self):
         """Reads signal strength data through the serial port.
@@ -67,11 +73,11 @@ class SerialHandler:
             print(e)
 
     def send_command_to_serial(self, command, return_output=False):
-        """Sends given command via serial and returns the output
+        """Sends given command via serial.
 
         Args:
             command (str): given command
-        
+            return_output (boolean, optional): If true, returns output
         Returns:
             string output
         """
