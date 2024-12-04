@@ -17,13 +17,12 @@ class SerialHandler:
                  0      -113 dBm or less
                  1      -111 dBm
                  2–30   -109 dBm to -53 dBm
-                 31     -51 dBm or greater
+                 31     -51 dBm or greater  # best signal strength
                  99      Not known or not detectable
         """
         try:
             regex_pattern = re.compile(r"\+CSQ: (?P<strength>\d+)")
-            self.s.write('AT+CSQ\r\n'.encode())
-            output = self.s.readline().decode().strip()
+            output = self.send_command_to_serial("AT+CSQ", return_output=True)
             match = re.match(regex_pattern, output)
             if match:
                 signal_strength = match.group('strength')
@@ -58,9 +57,7 @@ class SerialHandler:
             (?P<date>\S+)         # Capture date
             """, re.VERBOSE)
             
-            
-            self.s.write('AT+QGPSLOC=0\r\n'.encode())
-            output = self.s.readline().decode().strip()
+            output = self.send_command_to_serial("AT+QGPSLOC=0", return_output=True)
             match = re.match(regex_pattern, output)
             if match:
                 return match.group('utc'), match.group('latitude'), match.group('longitude'), match.group('speed'), match.group('date')
@@ -68,9 +65,16 @@ class SerialHandler:
                 print(f"Error found in output: {output}")
         except Exception as e:
             print(e)
-    
-    def enable_gps(self):
-        self.s.write('AT+QGPS=1\r\n'.encode()) # Turn on GPS
 
-    def close_gps(self):
-        self.s.write('AT+QGPSEND\r\n'.encode()) # Close GPS
+    def send_command_to_serial(self, command, return_output=False):
+        """Sends given command via serial and returns the output
+
+        Args:
+            command (str): given command
+        
+        Returns:
+            string output
+        """
+        self.s.write(command + '\r\n'.encode())
+        if return_output:
+            return self.s.readline().decode().strip()
