@@ -1,4 +1,4 @@
-from RaspberryPiScripts.serial_handler import SerialHandler
+from serial_handler import SerialHandler
 from influxdb_client import Point
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS

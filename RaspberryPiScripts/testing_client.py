@@ -1,4 +1,4 @@
-from RaspberryPiScripts.serial_handler import SerialHandler
+from serial_handler import SerialHandler
 import logging
 import sys
 
@@ -11,7 +11,7 @@ class TestingClient:
         self.set_logger()
         self.help()
         user_input = input("Please give the serial bus you want to use. Press ENTER if you wish to use /dev/ttyUSB2: ")
-        if not user_input:
+        if user_input:
             self.serial = SerialHandler(user_input)
             self.logger.info(f"Used serial bus is: {user_input}")
         else:
