@@ -5,6 +5,8 @@ import sys
 class TestingClient:
     
     def __init__(self):
+        """Class designed to help with manual testing of commands and output. Will create a log file of everything.
+        """
         self.logger = logging.getLogger()
 
     def perform_communications(self):
