@@ -50,10 +50,17 @@
       background-color: rgb(220, 220, 220);
       border: 1px solid rgb(120, 120, 120);
     }
-    #checkbox {
+    #autoFocusCheckbox {
       width: 50px;
       height: 23px;
       top: 5px;
+      left: 100px;
+      position: absolute;
+    }
+    #markerCheckbox {
+      width: 50px;
+      height: 23px;
+      top: 28px;
       left: 100px;
       position: absolute;
     }
@@ -98,7 +105,8 @@
       <button id="focusButton" title="Focus map on the marker" onclick="focusMapOnMarker(latestLon, latestLat)">
         <img id="focusImage" src="Icons/focus.png" width="20" height="20">
       </button>
-      <input type="checkbox" id="checkbox" name="markerApplyCheckbox" title="Start/stop applying a line">
+      <input type="checkbox" id="markerCheckbox" name="markerApplyCheckbox" title="Start/stop applying a line">
+      <input type="checkbox" id="autoFocusCheckbox" name="autoFocusCheckbox" title="Automatically follow the marker's movements">
       <select name="colors" id="colorSelect" title="Choose a color for the line">
         <option value="blue" style='font-size: 18px; color: blue;'>Blue&#9679;</option>
         <option value="red" style='font-size: 18px; color: red;'>Red&#9679;</option>
@@ -196,7 +204,7 @@
       const signalImageIndex = getSignalImageIndex(latestSignalStrength);
       document.getElementById('signalImage').src = images[signalImageIndex];
 
-      if (isMarkApplierChecked()) {
+      if (markerCheckbox.checked) {
           updateDownloadData();
         }
 
@@ -246,9 +254,12 @@
           map.addLayer(vectorLayer);
 
           addMarkerClickListener(latestData);
-          focusMapOnMarker(longitude, latitude);
+          map.getView().setCenter(ol.proj.fromLonLat([longitude, latitude]));
       } else {
         animateMarkerWithLine(newCoordinates);
+        if (autoFocusCheckbox.checked) {
+          focusMapOnMarker(latestLon, latestLat);
+        }
       }
     }
 
@@ -257,7 +268,7 @@
     const startCoordinates = marker.getGeometry().getCoordinates();
     const startTime = Date.now();
 
-    function moveMarkerAndExtendLine() {
+      function moveMarkerAndExtendLine() {
         const elapsedTime = Date.now() - startTime;
         const fraction = Math.min(elapsedTime / duration, 1);
 
@@ -268,7 +279,7 @@
 
         marker.getGeometry().setCoordinates(interpolatedCoordinates);
 
-        if (isMarkApplierChecked()) {
+        if (markerCheckbox.checked) {
           if (!currentLineFeature) {
           currentLineFeature = createNewLineSegment(startCoordinates);
           }
@@ -286,7 +297,7 @@
         if (fraction < 1) {
             requestAnimationFrame(moveMarkerAndExtendLine);
         }
-    }
+      }
     requestAnimationFrame(moveMarkerAndExtendLine);
 }
 
@@ -320,7 +331,29 @@
     }
 
     function focusMapOnMarker(longitude, latitude) {
-      map.getView().setCenter(ol.proj.fromLonLat([longitude, latitude]));
+      const view = map.getView();
+      const currentCenter = view.getCenter();
+      const newCenter = ol.proj.fromLonLat([longitude, latitude]);
+      const duration = readInterval / 2;
+      const startTime = Date.now();
+
+      function moveMap() {
+          const elapsedTime = Date.now() - startTime;
+          const fraction = Math.min(elapsedTime / duration, 1);
+
+          const interpolatedCenter = [
+              currentCenter[0] + (newCenter[0] - currentCenter[0]) * fraction,
+              currentCenter[1] + (newCenter[1] - currentCenter[1]) * fraction,
+          ];
+
+          view.setCenter(interpolatedCenter);
+
+          if (fraction < 1) {
+              requestAnimationFrame(moveMap);
+          }
+      }
+
+      requestAnimationFrame(moveMap);
     }
 
     function addMarkerClickListener(data) {
@@ -402,11 +435,6 @@
 
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    }
-
-    function isMarkApplierChecked(){
-      const checkBox = document.getElementById('checkbox')
-      return checkBox.checked;
     }
 
     async function getData() {
