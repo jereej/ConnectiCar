@@ -121,6 +121,9 @@
         brown: '#A52A2A'
     };
 
+    //Variable for assigning the reading interval for data in milliseconds
+    let readInterval = 500;
+
     let map, marker, vectorLayer
 
     //Variables for storing the latest received data values 
@@ -149,7 +152,8 @@
     async function mainRead() {
       const latestData = await getData();
 
-      if (latestData == null) {
+      if ([latestData, latestLon, latestLat, latestSpd, latestSignalStrength]
+          .every(item => item === null)) {
         latestLon = defaultLon;
         latestLat = defaultLat;
         latestSpd = defaultSpd;
@@ -217,22 +221,48 @@
           addMarkerClickListener(latestData);
           focusMapOnMarker(longitude, latitude);
       } else {
-          marker.getGeometry().setCoordinates(newCoordinates);
-
-          if (isMarkApplierChecked()) {
-              if (!currentLineFeature) {
-                  currentLineFeature = createNewLineSegment(newCoordinates);
-              } else {
-                  const currentCoordinates = currentLineFeature.getGeometry().getCoordinates();
-                  currentCoordinates.push(newCoordinates);
-                  currentLineFeature.getGeometry().setCoordinates(currentCoordinates);
-              }
-              lastPoint = newCoordinates;
-          } else {
-              currentLineFeature = null;
-          }
+        animateMarkerWithLine(newCoordinates);
       }
     }
+
+    function animateMarkerWithLine(newCoordinates) {
+    const duration = readInterval / 2;
+    const startCoordinates = marker.getGeometry().getCoordinates();
+    const startTime = Date.now();
+
+    function moveMarkerAndExtendLine() {
+        const elapsedTime = Date.now() - startTime;
+        const fraction = Math.min(elapsedTime / duration, 1);
+
+        const interpolatedCoordinates = [
+            startCoordinates[0] + (newCoordinates[0] - startCoordinates[0]) * fraction,
+            startCoordinates[1] + (newCoordinates[1] - startCoordinates[1]) * fraction,
+        ];
+
+        marker.getGeometry().setCoordinates(interpolatedCoordinates);
+
+        if (isMarkApplierChecked()) {
+          if (!currentLineFeature) {
+          currentLineFeature = createNewLineSegment(startCoordinates);
+          }
+        
+          const lineGeometry = currentLineFeature.getGeometry();
+
+          const currentLineCoords = lineGeometry.getCoordinates();
+          currentLineCoords.push(interpolatedCoordinates);
+          lineGeometry.setCoordinates(currentLineCoords);
+        }
+        else {
+          currentLineFeature = null;
+        }
+        
+        if (fraction < 1) {
+            requestAnimationFrame(moveMarkerAndExtendLine);
+        }
+    }
+    requestAnimationFrame(moveMarkerAndExtendLine);
+}
+
 
     function createNewLineSegment(startingPoint) {
         const lineFeature = new ol.Feature({
@@ -295,7 +325,7 @@
     }
 
     mainRead();
-    setInterval(mainRead, 500);
+    setInterval(mainRead, readInterval);
   </script>
 </body>
 </html>
