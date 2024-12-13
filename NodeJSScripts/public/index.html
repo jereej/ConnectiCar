@@ -181,8 +181,7 @@
     }
 
     async function mainRead() {
-      const coords = await getData();
-      const latestData = coords[coords.length - 1];
+      const latestData = await getData();
 
       if ([latestData, latestLon, latestLat, latestSpd, latestSignalStrength]
           .every(item => item === null)) {
