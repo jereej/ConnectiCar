@@ -12,7 +12,8 @@ minicom
 If you haven't installed the packages on your machine, you'll need to run the commands:
 ```sh
 sudo apt-get install minicom
-COMMANDS TO BE ADDED HERE
+sudo apt install udhcpc
+sudo apt install net-tools
 ```
 
 After this follow the instructions below **before running the startupscript.sh**:
