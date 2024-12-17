@@ -253,7 +253,7 @@
 
           map.addLayer(vectorLayer);
 
-          addMarkerClickListener(latestData);
+          addMarkerClickListener();
           map.getView().setCenter(ol.proj.fromLonLat([longitude, latitude]));
       } else {
         animateMarkerWithLine(newCoordinates);
@@ -356,7 +356,7 @@
       requestAnimationFrame(moveMap);
     }
 
-    function addMarkerClickListener(data) {
+    function addMarkerClickListener() {
       const popup = document.getElementById('popup');
       map.on('click', function (evt) {
         const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
@@ -366,10 +366,10 @@
         if (feature === marker) {
           popup.style.display = 'block';
 
-          document.getElementById('longitude').textContent = `Longitude: ${data.longitude}`;
-          document.getElementById('latitude').textContent = `Latitude: ${data.latitude}`;
-          document.getElementById('speed').textContent = `Speed: ${data.speed}`;
-          document.getElementById('signalText').textContent = `${data.signal_strength}`;
+          document.getElementById('longitude').textContent = `Longitude: ${latestLon}`;
+          document.getElementById('latitude').textContent = `Latitude: ${latestLat}`;
+          document.getElementById('speed').textContent = `Speed: ${latestSpd}`;
+          document.getElementById('signalText').textContent = `${latestSignalStrength}`;
         } else {
           popup.style.display = 'none';
         }
@@ -377,16 +377,12 @@
     }
 
     function updateDownloadData() {
-      if (![latestLon, latestLat, latestSpd, latestSignalStrength]
-          .every(item => item === null)) {
-            downloadData[0].push(latestLat);
-            downloadData[1].push(latestLon);
-            downloadData[2].push(latestSpd);
-            downloadData[3].push(latestSignalStrength);
-            downloadData[4].push(markerColor);
-            downloadData[5].push(getDateTime());
-          }
-    }
+        if ([latestLon, latestLat, latestSpd, latestSignalStrength].some(item => item !== null)) {
+          [latestLat, latestLon, latestSpd, latestSignalStrength, markerColor, getDateTime()].forEach((value, index) => {
+            downloadData[index].push(value);
+          });
+        }
+      }
 
     function getDateTime() {
 
