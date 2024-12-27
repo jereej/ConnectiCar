@@ -38,7 +38,38 @@ After going through the steps mentioned above, you can run the startupscript.sh 
 >NOTE: *Some critique can be made in terms of removing the modem and network-managers, but this is how Waveshare has officially instructed to do.*
 
 ## Creating a routine to run startupscript.sh every time the machine boots
-INSTRUCTIONS_TO_BE_ADDED_HERE
+
+There are several ways to do this, but the simplest way is to add the startupscript.sh to either crontab or rc.local-file, which run the script at system startup.
+
+Crontab: <p>
+Set the file to executable
+```sh
+sudo chmod +x /path/to/startupscript.sh
+```
+Add the path to the script to crontab
+```sh
+$ crontab -e
+@reboot  /path/to/startupscript.sh
+```
+
+Rc.local: <p>
+Set the file to executable
+```sh
+sudo chmod +x /path/to/startupscript.sh
+```
+Open /etc/rc.local file and add the path to the startupscript.sh there
+```sh
+#!/bin/sh
+/path/to/startupscript.sh
+```
+If Rc.local file is not executable already
+```sh
+sudo chmod +x /etc/rc.local
+```
+Finally initiate the service to run during boot
+```sh
+sudo systemctl start rc-local
+```
 
 ## Running the startupscript.sh manually
 You can run the startupscript simply by navigating to the RaspberryPiScripts directory and executing:
