@@ -81,6 +81,7 @@ class SerialHandler:
         Returns:
             string output
         """
-        self.s.write(command + '\r\n'.encode())
+        command = command + "\r\n"
+        self.s.write(command.encode())
         if return_output:
             return self.s.readline().decode().strip()
