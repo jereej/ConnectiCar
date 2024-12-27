@@ -71,6 +71,13 @@ self.bucket = "YOUR_BUCKET_HERE"
 ```
 The values must be from an existing instance of InfluxDB that you are using or have created.
 
+Also the following python libraries need to be installed:
+
+```python
+pip install influxdb-client
+python -m pip install pyserial
+```
+
 ### Contents of the scripts
 
 - `main.py`:
