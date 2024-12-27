@@ -28,10 +28,9 @@ class ConnectiCarUnitTests(unittest.TestCase):
         |> last()'
         signal_strength = influx.read_and_write_signal_strength_data()
         result = influx.query_api.query(org=influx.org, query=query)
-        query_result = result[0][0].get_value()
-        #for table in result:
-        #    for record in table.records:
-        #        query_result = record.get_value()
+        for table in result:
+            for record in table.records:
+                query_result = record.get_value()
         self.assertEqual(signal_strength, query_result)
 
 
