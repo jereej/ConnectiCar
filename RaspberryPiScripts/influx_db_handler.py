@@ -25,7 +25,6 @@ class InfluxDBHandler:
             point = Point('signal_strength').field('signal_strength', signal_strength)
             if point:
                 self.write_api.write(bucket=self.bucket, org=self.org, record=point)
-                print(f"Data written: {point}")
                 return signal_strength  # used in unit_tests.py
         else:
             print("Error in getting signal strength.")
