@@ -1,4 +1,4 @@
-# Instructions on how to use the startup script
+# Instructions on how to use the scripts in this directory
 
 ## Requirements and manual installation of the OBU
 To do the manual configuration *(in case if you have a SIM card in the OBU)* and running the startupscript.sh you'll need the following packages:
@@ -57,3 +57,39 @@ udhcpc -i "$interface"
 # adds the captured interface to the routing tables
 route add -net 0.0.0.0 "$interface"
 ```
+> NOTE: The `startupscript.sh` will most likely not work properly if modemmanager and network-manager haven't been removed from the device.
+
+## Running the other scripts after set-up is done
+
+### Setting up
+To ensure everything works correctly, some changes need to be made in `influx_db_handler.py` before running any of the other scripts. You need to change:
+```python
+self.url = "YOUR_URL_HERE"
+self.token = "YOUR_TOKEN_HERE"
+self.org = "YOUR_ORG_HERE"
+self.bucket = "YOUR_BUCKET_HERE"
+```
+The values must be from an existing instance of InfluxDB that you are using or have created.
+
+### Contents of the scripts
+
+- `main.py`:
+    - Reads signal strength values from the device and sends them to the InfluxDB in a loop.
+    - Everything regarding GPS data has been commented out since the GPS didn't work on our device.
+- `testing_client.py`:
+    - A simple client that can be used to test sending (AT) commands via the serial connection. Will create a log file (*serial_comms.log*) to record everything that has been sent and received.
+    - The testing client will return all output, even if the given command is incorrect.
+- `unit_tests.py`:
+    - Simple unit tests testing the different parts of the functionality.
+    - No unit tests were made for the GPS or anything that would be dependant on the GPS data since we were unable to get it from our device via AT commands.
+- `influx_db_handler.py`:
+    - Contains all the functionalities that have to do with InfluxDB, e.g. sending data to the database.
+- `serial_handler.py`:
+    - Contains all the functionalities that have to do with the serial connection - e.g. sending AT commands and reading the received output.
+
+### Running the scripts
+To run any of the scripts, simply give the following command:
+```sh
+sudo python3 <file_name>
+```
+> NOTE: sudo is required due to opening the serial connection.

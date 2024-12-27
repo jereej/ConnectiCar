@@ -29,7 +29,6 @@ class SerialHandler:
         try:
             regex_pattern = re.compile(r"\+CSQ: (?P<strength>\d+)")
             output = self.send_command_to_serial("AT+CSQ", return_output=True)
-            print(f"output from sending AT+CSQ is: {output}")
             match = re.match(regex_pattern, output)
             if match:
                 signal_strength = match.group('strength')
@@ -85,6 +84,5 @@ class SerialHandler:
         command = command + "\r\n"
         self.s.write(command.encode())
         if return_output:
-            debug_print = self.s.readline()  # Filter out the line containing the given command
-            print(f"printing the extracted line for debug: {debug_print}")
+            self.s.readline()  # Filter out the line containing the given command
             return self.s.readline().decode().strip()

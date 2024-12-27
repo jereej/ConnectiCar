@@ -37,16 +37,15 @@ class TestingClient:
                          "just press ENTER (it will be /dev/ttyUSB2 by default).\nAfter that, you can simply give the command"
                          "by typing it out.\n\nYou can quit the program by giving the character q as input.\n"
                          "Logs from the session will be saved to serial_comms.log in this directory. "
-                         "(../ConnectiCar/RaspberryPiScripts/serial_comms.log)")
+                         "(../ConnectiCar/RaspberryPiScripts/)")
     
     @staticmethod
     def set_logger():
-        # logging.root.handlers = []  
         logging.basicConfig(
             level=logging.INFO,
             format="[%(asctime)s] %(message)s",
             handlers=[logging.FileHandler("serial_comms.log"), logging.StreamHandler(sys.stdout)],
-            force=True  # any existing handlers attacked to root logger will be closed
+            force=True  # any existing handlers attached to root logger will be closed
         )
 
 
