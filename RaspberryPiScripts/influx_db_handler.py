@@ -16,6 +16,7 @@ class InfluxDBHandler:
         self.bucket = "YOUR_BUCKET_HERE"
         self.client = InfluxDBClient(url=self.url, token=self.token, org=self.org)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+        self.query_api = self.client.query_api()
         self.serial = SerialHandler()
     
     def read_and_write_signal_strength_data(self):
@@ -24,6 +25,7 @@ class InfluxDBHandler:
             point = Point('signal_strength').field('signal_strength', signal_strength)
             self.write_api.write(bucket=self.bucket, org=self.org, record=point)
             print(f"Data written: {point}")
+            return signal_strength  # used in unit_tests.py
         else:
             print("Error in getting signal strength.")
 

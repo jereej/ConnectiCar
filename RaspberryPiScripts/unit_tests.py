@@ -1,5 +1,6 @@
 import unittest
 from serial_handler import SerialHandler
+from influx_db_handler import InfluxDBHandler
 
 class ConnectiCarUnitTests(unittest.TestCase):
     
@@ -17,6 +18,23 @@ class ConnectiCarUnitTests(unittest.TestCase):
         serial = SerialHandler()
         cpin = serial.send_command_to_serial("AT+CPIN?", return_output=True)
         self.assertIn("READY", cpin)
+
+    def test_influx_signal_strength_query(self):
+        influx = InfluxDBHandler()
+        query = 'from(bucket:"car-data")\
+        |> range(start: -10m)\
+        |> filter(fn:(r) => r._measurement == "signal_strength")\
+        |> filter(fn:(r) => r._field == "signal_strength")\
+        |> last()'
+        signal_strength = influx.read_and_write_signal_strength_data()
+        result = influx.query_api.query(org=influx.org, query=query)
+        query_result = result[0][0].get_value()
+        #for table in result:
+        #    for record in table.records:
+        #        query_result = record.get_value()
+        self.assertEqual(signal_strength, query_result)
+
+
 
 if __name__ == '__main__':
     unittest.main()
