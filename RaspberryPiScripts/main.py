@@ -1,5 +1,5 @@
 import time
-from RaspberryPiScripts.influx_db_handler import InfluxDBHandler
+from influx_db_handler import InfluxDBHandler
 
 def main():
     """Gets the signal strength data and GPS data continuously and sends it to influxDB.

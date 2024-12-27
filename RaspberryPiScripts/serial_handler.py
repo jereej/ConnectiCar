@@ -84,4 +84,5 @@ class SerialHandler:
         command = command + "\r\n"
         self.s.write(command.encode())
         if return_output:
+            self.s.readline()  # Filter out the line containing the given command
             return self.s.readline().decode().strip()

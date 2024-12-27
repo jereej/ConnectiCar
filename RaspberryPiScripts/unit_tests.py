@@ -13,7 +13,7 @@ class ConnectiCarUnitTests(unittest.TestCase):
         at_ok = serial.send_command_to_serial("AT", return_output=True)
         self.assertIn("OK", at_ok)
     
-    def test_pin_status(self):
+    def test_sim_status(self):
         serial = SerialHandler()
         cpin = serial.send_command_to_serial("AT+CPIN?", return_output=True)
         self.assertIn("READY", cpin)

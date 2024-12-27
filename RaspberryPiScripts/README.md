@@ -50,7 +50,7 @@ Main contents of the startupscript.sh:
 ```sh
 # captures the interface starting with the prefix enx
 interface=$(ifconfig -a | grep "enx" | awk '{gsub(/:/, "")}; print $1') 
-# configures the netword interface using DHCP (Dynamic Host Configuration Protocol)
+# configures the network interface using DHCP (Dynamic Host Configuration Protocol)
 dhclient -v "$interface"
 # uses the captured interface to negotiate a lease with the DHCP server
 udhcpc -i "$interface"
