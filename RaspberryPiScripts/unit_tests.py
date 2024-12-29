@@ -21,7 +21,7 @@ class ConnectiCarUnitTests(unittest.TestCase):
 
     def test_influx_signal_strength_query(self):
         influx = InfluxDBHandler()
-        query = 'from(bucket:"car-data")\
+        query = f'from(bucket:"{influx.bucket}")\
         |> range(start: -10m)\
         |> filter(fn:(r) => r._measurement == "signal_strength")\
         |> filter(fn:(r) => r._field == "signal_strength")\
