@@ -24,7 +24,7 @@ You can follow the instructions on the [Waveshare website](https://www.waveshare
 2. Give the following commands:
     sudo apt purge modemmanager -y 
     sudo apt purge network-manager -y
-    sudo minicom - D /dev/ttyUSB2
+    sudo minicom -D /dev/ttyUSB2
 3. In the opened minicom give the following commands:
     # If AT+CPIN? doesn't return READY, you'll need to open up the SIM card.
     # You can do this by running AT+CLCK="SC",0 and then running AT+CFUN=1,1.
