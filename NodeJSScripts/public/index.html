@@ -33,6 +33,21 @@
       z-index: 1000;
       width: 300px;
     }
+    .popUpRow {
+      font-size: 12px;
+    }
+    .aboutPopup {
+      position: absolute;
+      top: 60px;
+      right: 25px;
+      background-color: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1000;
+      width: 600px;
+    }
     #popup_content .row {
       margin-top: 10px;
     }
@@ -74,6 +89,10 @@
       border-radius: 2px;
       background-color: rgb(248, 248, 248);
     }
+    #downloadButton:hover {
+      background-color: rgb(220, 220, 220);
+      border: 1px solid rgb(120, 120, 120);
+    }
     #colorSelect {
       width: 80px;
       height: 23px;
@@ -82,6 +101,20 @@
       position: absolute;
       background-color: rgb(248, 248, 248);
       border-radius: 2px;
+    }
+    #aboutButton {
+      width: 50px;
+      height: 23px;
+      top: 8px;
+      right: 25px;
+      position: absolute;
+      border: 1px solid rgb(172, 172, 172);
+      border-radius: 2px;
+      background-color: rgb(248, 248, 248);
+    }
+    #aboutButton:hover {
+      background-color: rgb(220, 220, 220);
+      border: 1px solid rgb(120, 120, 120);
     }
   </style>
 </head>
@@ -101,6 +134,37 @@
         </div>
       </div>
     </div>
+    <div id="aboutPopup" class="aboutPopup">
+      <div id="popupContent1">
+        <h3>About ConnectiCar:</h3>
+        <div class="popUpRow">
+          <p>This web application for ConnectiCar is produced on the Software Project -course of 2024 in the University of Oulu.
+            ConnectiCar is a project that involves creating an Onboarding Unit (OBU) that enables real-time vehicle tracking and monitoring through the cloud.
+            The OBU uses 4G/5G/Wi-Fi networks to send data such as vehicle speed and location to the cloud.
+            The red marker on the map moves based on the position data gained from the cloud. The latest received data can be viewed by clicking the marker.
+          </p>
+        </div>
+        <br />
+      </div>
+      <div id="popupContent2" style="display: none;">
+        <h3>Controls:</h3>
+        <div class="popUpRow">
+          <p>+/- Buttons: Zoom the map in or out</p>
+          <p>Follow Checkbox: Map is automatically centered on the Marker when the box is checked</p>
+          <p>Draw Line Checkbox: Draws a colored line between traversed positions and saves data when the box is checked</p>
+          <p>Color Selector Combobox: Pick a color for the line to be drawn.<br />The color can only be switched between when the Draw Line Checkbox is not checked</p>
+          <p>Focus Button: Focus the map on the current position of the Marker</p>
+          <p>Download Button: Download data from the positions connected with the drawn line as a .csv file.<br />
+            The downloaded data is in the following format:<br />
+            Latitude, Longitude, Speed (km/h), Signal Strength, Marker Color, Time and Date</p>
+          <br />
+        </div>
+      </div>
+      <div class="controls">
+        <button onclick="prevContent()">←</button>
+        <button onclick="nextContent()">→</button>
+      </div>
+    </div>
     <div>
       <button id="focusButton" title="Focus map on the marker" onclick="focusMapOnMarker(latestLon, latestLat)">
         <img id="focusImage" src="Icons/focus.png" width="20" height="20">
@@ -117,6 +181,9 @@
       </select>
       <button id="downloadButton" title="Download visible marker data" onclick="formatDownloadData()">
         <img id="downloadImage" src="Icons/download.png" width="20" height="20">
+      </button>
+      <button id="aboutButton" title="Open About Box" onclick="openAboutPopup()">
+        <img id="questionImage" src="Icons/question.png" width="20" height="20">
       </button>
     </div>
   </section>
@@ -156,6 +223,8 @@
     let readInterval = 500;
 
     let map, marker, vectorLayer, markerColor;
+
+    let currentContentIndex = 1;
 
     //Variables for storing the latest received data values 
     let latestLon = null, latestLat = null, latestSpd = null, latestSignalStrength = null;
@@ -254,6 +323,7 @@
           map.addLayer(vectorLayer);
 
           addMarkerClickListener();
+
           map.getView().setCenter(ol.proj.fromLonLat([longitude, latitude]));
       } else {
         animateMarkerWithLine(newCoordinates);
@@ -376,6 +446,31 @@
       });
     }
 
+    function openAboutPopup() {
+      const popup = document.getElementById('aboutPopup');
+      if (popup.style.display == 'block') {
+        popup.style.display = 'none';
+      } else {
+        popup.style.display = 'block';
+      }
+    }
+
+    function prevContent() {
+      const newIndex = currentContentIndex === 1 ? 2 : 1;
+      showContent(newIndex);
+    }
+
+    function nextContent() {
+      const newIndex = currentContentIndex === 2 ? 1 : 2;
+      showContent(newIndex);
+    }
+
+    function showContent(index) {
+      document.getElementById('popupContent1').style.display = index === 1 ? 'block' : 'none';
+      document.getElementById('popupContent2').style.display = index === 2 ? 'block' : 'none';
+      currentContentIndex = index;
+    }
+
     function updateDownloadData() {
         if ([latestLon, latestLat, latestSpd, latestSignalStrength].some(item => item !== null)) {
           [latestLat, latestLon, latestSpd, latestSignalStrength, markerColor, getDateTime()].forEach((value, index) => {
@@ -401,6 +496,8 @@
     }
 
     function formatDownloadData() {
+
+      if (downloadData.every(subarray => Array.isArray(subarray) && subarray.length === 0)) return;
 
       const headers = ["Latitude", "Longitude", "Speed (km/h)", "Signal Strength", "Marker Color", "Time and Date"];
 
